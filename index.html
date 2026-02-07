@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="icon" type="image/svg+xml" href="assets/pictures/favicon.svg">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+    
+    <title>Timeline orthophotos</title>
+</head>
+<body>
+<div class="main">
+
+<div id="div-header">
+    <div id="logo">
+        <img src="assets/pictures/logo.svg" alt="logo">
+    </div>
+    <div data-mode="mode_normal" id="mode" class="mode"></div> <!-- timeline mode normal --> 
+
+    <!-- <div class="timeline mode_timelapse">  timeline mode_timelapse 
+        
+            <div class="div-timeline buttons" id="buttons">
+                <div class="timeline-item"><div class="timeline-year">2023</div>
+                <div class="timeline-dot">
+                    <button id="2" class="button"></button>
+                </div>
+            </div>
+
+    </div> -->
+
+    <div class="compte"></div>
+</div>
+
+<div id="app">
+
+     <div id="map_div">
+        <div id="map"></div>
+
+        <div id="map-controls"> 
+            <div class="div_micro">
+                
+                <button id="btn_micro" class="map-btn">🎤</button>
+            </div>  
+            
+            
+            <div class="container_timelapse">
+                <button id="btn_timelapse" class="map-btn">TL</button>
+            </div>
+
+            <div class="b2d3d">
+                <button id="btn_2d" class="map-btn active">2D</button>
+                <button id="btn_3d" class="map-btn">3D</button>
+            </div>
+
+            <div>
+                <button id="btn_fullscreen" class="map-btn fullscreen_btn">
+                    &#x26F6;
+                </button>
+            </div>
+            
+            
+        </div>
+    
+    </div>
+
+    <div id="sidebar_div" class="mode_home">       
+        <h3>Grand Sud</h3>
+        <p class="sous_titre">Aix-en-Provence</p>
+        <div>
+            <!-- <div class="pourcentage">
+                <div id="btn_etat_normal" class="div_etat">
+                        <span id="span_normal" class="etat_color normal"></span>               
+                    <div>
+                        <span id="span_normal_count"></span> % photos normales
+                    </div>
+                </div>
+                <div id="btn_etat_attention" class="div_etat">
+                    <span id="span_attention" class="etat_color attention"></span>
+                    <div>
+                        <span id="span_attention_count"></span> % à controler
+                    </div>
+                </div>
+                <div id="btn_etat_danger" class="div_etat">
+                    <span id="span_danger" class="etat_color danger"></span>
+                    <div>
+                        <span id="span_danger_count"></span> % à risque
+                    </div>
+                </div>
+            </div> -->
+
+            <div id="picture_container">
+                <img id="chosen_photo" src="" alt="">   <!-- image border will be set in js "warning", "danger", "normal"-->
+            </div>
+            <div class="picture_detail">
+                <div id="picture_name"></div>
+                <div id="picture_description">
+                    <p><span id="photo_name"></span></p>
+                    <p ><span id="photo_year"></span></p>
+                    <p>Lng-Lat : <span id="lng"></span>, <span id="lat"></span></p>
+                    <p>
+                        <span id="p_description"></span>
+                    </p>
+                </div>
+            </div>
+
+        </div>
+        
+    </div>
+
+</div><!-- end app -->
+
+</div><!-- end main -->
+<!-- <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"> -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="js/Entities/Photo.js"></script>
+<script src="js/services/data.js"></script>
+<script src="main.js"></script>
+<script>
+    const photoUrl = `assets/timeline/`;
+    const mapContainer = document.getElementById('map');
+    const appMode = {
+        NORMAL: 'mode_normal',
+        EDIT: 'mode_edit',
+        ADD: 'mode_add',
+        EDIT_ZONE: 'mode_edit_zone',
+         TIMELAPSE: 'mode_timelapse'
+    };
+    let chosenPhoto = photos[0]; // Initialize chosenPhoto with the first photo in the list
+    
+    setMode(appMode.NORMAL);
+    const map = L.map('map',{maxZoom:22, minZoom:6}).setView([43.45, 5.295], 13);
+
+    const calculatedCenter = getCenterFromBounds(photos[0].coordinates);    
+    const photoData = {
+        id: 1,
+        url: `${photoUrl}img1.jpg`,
+        bounds: photos[0].coordinates,// [[43.451245, 5.298199], [43.453836, 5.305227]], // [[southWestLat, southWestLng], [northEastLat, northEastLng]]
+        center: calculatedCenter // Le point central pour le marqueur
+    };
+
+// 2. Création des éléments (sans les ajouter à la carte de suite)
+const marker = L.marker(photoData.center);
+let myImage = L.imageOverlay(photoData.url, photoData.bounds);
+
+
+marker.on('click', () => {
+    // 1. On ajoute l'image immédiatement (elle est en dessous du marqueur)
+    if (!map.hasLayer(myImage)) {
+        myImage.addTo(map);
+    }
+
+    map.flyTo(photoData.center, 18, {
+        duration: 0.5
+    });
+})
+
+
+
+    // 2. Ajouter le fond de carte (OpenStreetMap)
+    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    const baseMaps = {
+        "OpenStreetMap": osmLayer // L.tileLayer habituel, on peut mettre d'autres
+    }
+    const overlayMaps = {
+        // "Photos" : photoLayerGroup,
+        // "Zones dessinés" : zoneLayerGroup,
+        "Orthophoto" : myImage
+    }
+
+    L.control.layers( baseMaps, overlayMaps, {
+        collapsed : true,
+        position : 'bottomleft'
+    }).addTo(map);
+   
+    
+map.on('zoomend', updateVisibility);
+
+// Exécuter une fois au démarrage
+updateVisibility();
+
+</script>
+<script src="js/custom.js"></script>
+<script src="js/methodsTimelapse.js"></script>
+<script src="js/methodsPhotos.js"></script>
+<script src="js/viewer.js"></script>
+
+</body>
+</html>
+
+
+
+
+<!-- 
+
+
+// map.flyToBounds(photoData.bounds, {
+    //     maxZoom: 20,    // Zoom maximal
+    //     duration:0.5     // Durée de l'animation en secondes
+    // });
+
+
+<button id="btn_edit" class="map-btn">
+                    <img src="assets/pictures/edit-white-100.png" alt="icone edition" />
+                </button> -->
+                <!-- 
+            <div class="div_filter">
+                <button id="btn_filter" class="map-btn-filter">
+                    <img src="assets/pictures/white-filter-50.png" alt="icone filtre" />
+                </button>
+                <div id="display_filter">
+                    <label for="select_etat">État :</label>
+                    <select id="select_etat">
+                        <option value="-1" selected>Tous</option>
+                        <option value="0">Normal</option>
+                        <option value="1">À contrôler</option>
+                        <option value="2">À risque</option>
+                    </select>
+                </div>
+            </div> -->
+
+ 
+    <!-- 
+
+       // const orthoBounds = [[47.662014, -0.250707],[47.662997, -0.248374 ]]; // sw, ne
+    // const myImage = L.imageOverlay('assets/pictures/img1.jpg', orthoBounds).addTo(map);
+    // map.fitBounds(orthoBounds);   // 
+  
+
+//   const map = L.map('map', {
+//             zoomControl:false, maxZoom:22, minZoom:6
+//         }).fitBounds([[43.45,5.29],[43.45,5.30]]); // [[47.66085213164272,-0.25238025002519376],[47.663393551031355,-0.24768706111963834]]);
+
+
+
+
+
+    // // On crée un groupe de calques pour pouvoir les effacer d'un coup
+    // const photoLayerGroup = L.layerGroup().addTo(map);
+
+    // // 1. Créer un groupe pour les éléments dessinés
+    // const zoneLayerGroup = new L.FeatureGroup().addTo(map);
+
+    // // 2. Ajouter la barre d'outils de dessin
+    // const drawControl = new L.Control.Draw({
+    //     edit: {
+    //         featureGroup: zoneLayerGroup
+    //     },
+    //     draw: {
+    //         polygon: true,   // On active les polygones
+    //         polyline: false, // On désactive ce dont on n'a pas besoin
+    //         rectangle: true,
+    //         circle: true,
+    //         marker: false
+    //     }
+    // });
+    // map.addControl(drawControl); 
+    
+    
+     var zoomControl = L.control.zoom({
+        position: 'bottomleft'
+    }).addTo(map);
+
+    
+    -->

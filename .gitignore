@@ -1,0 +1,3 @@
+# Ne pas pusher les fichiers de cache Sass
+.sass-cache/
+*.css.map
