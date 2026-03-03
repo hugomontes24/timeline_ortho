@@ -17,7 +17,7 @@ const pDescription = document.getElementById('p_description');
 
 document.addEventListener('DOMContentLoaded', function () {
 
-    displayAsideChosenPhoto(photos[0]); // Display the first photo in the aside on page load
+    displayAsideChosenPhoto(photos[0]); // Display the first photo in the aside on page load    
 
     if(!SpeechRecognition) { console.log('Speech Recognition API not supported in this browser.');}
     

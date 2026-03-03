@@ -147,7 +147,7 @@
 // 2. Création des éléments (sans les ajouter à la carte de suite)
 const marker = L.marker(photoData.center);
 let myImage = L.imageOverlay(photoData.url, photoData.bounds);
-
+    console.log("Zoom level: ");
 
 marker.on('click', () => {
     // 1. On ajoute l'image immédiatement (elle est en dessous du marqueur)
@@ -159,8 +159,6 @@ marker.on('click', () => {
         duration: 0.5
     });
 })
-
-
 
     // 2. Ajouter le fond de carte (OpenStreetMap)
     const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
@@ -228,7 +226,7 @@ updateVisibility();
  
     <!-- 
 
-       // const orthoBounds = [[47.662014, -0.250707],[47.662997, -0.248374 ]]; // sw, ne
+    // const orthoBounds = [[47.662014, -0.250707],[47.662997, -0.248374 ]]; // sw, ne
     // const myImage = L.imageOverlay('assets/pictures/img1.jpg', orthoBounds).addTo(map);
     // map.fitBounds(orthoBounds);   // 
   
@@ -266,6 +264,4 @@ updateVisibility();
      var zoomControl = L.control.zoom({
         position: 'bottomleft'
     }).addTo(map);
-
-    
     -->

@@ -63,13 +63,18 @@ function handleVoiceCommand(text) {
     }
 }
 
-
 // **************************
 // ****  MAIN EXECUTION  *****
 // **************************
 document.addEventListener('DOMContentLoaded', function () {
     
     // initApp();
+    // Clic sur l'image pour l'ouvrir en grand
+    chosenPhotoElmt.addEventListener('click', function() {
+        if (this.src) {
+            window.open(this.src, '_blank');
+        }
+    });
 
     ['click','mousedown','wheel','touchstart'].forEach(evt => {
         btnFullscreen.addEventListener(evt, e => e.stopPropagation());
